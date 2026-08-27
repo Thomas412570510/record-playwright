@@ -9,14 +9,17 @@ if hasattr(sys.stdout, 'reconfigure'):
 
 def get_depth_info():
     cwd = os.getcwd()
-    basename = os.path.basename(cwd)
-    if basename.startswith('.agent'):
+    if os.path.exists(".github/skills") or os.path.exists("skills"):
         return True, (".github/skills" if os.path.exists(".github/skills") else "skills"), ("../../../../../" if os.path.exists(".github/skills") else "../../../../")
-    elif any(d.startswith('.agent') for d in os.listdir(cwd) if os.path.isdir(d)):
-        agent_dir_name = next(d for d in os.listdir(cwd) if d.startswith('.agent'))
-        return False, (f"{agent_dir_name}/.github/skills" if os.path.exists(f"{agent_dir_name}/.github/skills") else f"{agent_dir_name}/skills"), ("../../../../../../" if os.path.exists(f"{agent_dir_name}/.github/skills") else "../../../../../")
     else:
-        print("錯誤：找不到 .agent 資料夾。請在專案根目錄執行。")
+        agent_dir_name = None
+        for d in os.listdir(cwd):
+            if os.path.isdir(d) and (os.path.exists(os.path.join(cwd, d, ".github", "skills")) or os.path.exists(os.path.join(cwd, d, "skills"))):
+                agent_dir_name = d
+                break
+        if agent_dir_name:
+            return False, (f"{agent_dir_name}/.github/skills" if os.path.exists(f"{agent_dir_name}/.github/skills") else f"{agent_dir_name}/skills"), ("../../../../../../" if os.path.exists(f"{agent_dir_name}/.github/skills") else "../../../../../")
+        print("❌ 找不到 skills 或 .github/skills 資料夾！請確保在專案根目錄執行。")
         sys.exit(1)
 
 def sanitize_credentials(output_file):

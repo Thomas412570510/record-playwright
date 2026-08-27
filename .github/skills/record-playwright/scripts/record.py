@@ -1,4 +1,4 @@
-import os
+﻿import os
 import re
 import subprocess
 import sys
@@ -62,7 +62,7 @@ def main():
     
     print(f"將錄製儲存為: script-{next_num}/{output_filename}")
 
-    cmd = f'powershell.exe -Command "npx playwright codegen -o {depth_str}tests/script-{next_num}/{output_filename}"'
+    cmd = f'powershell.exe -ExecutionPolicy Bypass -Command "npx playwright codegen -o {depth_str}tests/script-{next_num}/{output_filename}"'
     print(f"執行指令: {cmd}")
     
     try:

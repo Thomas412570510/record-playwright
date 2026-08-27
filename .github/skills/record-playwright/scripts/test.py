@@ -1,4 +1,4 @@
-import os
+﻿import os
 import subprocess
 import sys
 
@@ -59,7 +59,7 @@ def main():
         playwright_cmd += " --update-snapshots"
         print("📸 [視覺回歸模式] 偵測到更新截圖指令，將自動建立/更新基準圖！")
         
-    cmd = f'powershell.exe -Command "{playwright_cmd}"'
+    cmd = f'powershell.exe -ExecutionPolicy Bypass -Command "{playwright_cmd}"'
     print(f"執行指令: {cmd}")
     
     # 注入 NODE_PATH 確保能找到 playwright 模組

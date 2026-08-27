@@ -1,4 +1,4 @@
-import os
+﻿import os
 import subprocess
 import sys
 
@@ -67,7 +67,7 @@ def main():
 
     # 3. 執行轉檔
     print("\n================== [步驟三: 影音轉檔] ==================")
-    convert_cmd = 'powershell.exe -Command "node convert-video.js"'
+    convert_cmd = 'powershell.exe -ExecutionPolicy Bypass -Command "node convert-video.js"'
     subprocess.run(convert_cmd, cwd=env_dir, shell=True)
     
     print("\n=========================================================")

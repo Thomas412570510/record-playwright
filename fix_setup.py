@@ -1,4 +1,9 @@
+﻿import sys
 import os
+
+filepath = r"C:\Users\kobe2\Desktop\.agent7\.github\skills\record-playwright\scripts\setup.py"
+
+content = """import os
 import subprocess
 import json
 import sys
@@ -21,7 +26,7 @@ def check_executable(name, cmd):
     try:
         result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if result.returncode == 0:
-            version = result.stdout.decode('utf-8', errors='ignore').strip().split('\n')[0]
+            version = result.stdout.decode('utf-8', errors='ignore').strip().split('\\n')[0]
             print(f"✅ 已安裝 ({version})")
             return True
         else:
@@ -32,8 +37,8 @@ def check_executable(name, cmd):
         return False
 
 def main():
-    print("🚀 啟動 Playwright 企業級環境自動安裝程序...\n")
-    print("⚠️ 警告: 已自動關閉 TLS 憑證驗證 (NODE_TLS_REJECT_UNAUTHORIZED=0) 以繞過企業防火牆。請留意傳輸安全。\n")
+    print("🚀 啟動 Playwright 企業級環境自動安裝程序...\\n")
+    print("⚠️ 警告: 已自動關閉 TLS 憑證驗證 (NODE_TLS_REJECT_UNAUTHORIZED=0) 以繞過企業防火牆。請留意傳輸安全。\\n")
     
     print("================== [環境前置檢查] ==================")
     all_passed = True
@@ -44,9 +49,9 @@ def main():
         print("⚠️ 警告: 找不到 'code' 指令。若是免安裝版 VS Code 則可忽略，否則無法自動安裝擴充。")
 
     if not all_passed:
-        print("\n🛑 【嚴重錯誤】缺少基礎執行環境！")
+        print("\\n🛑 【嚴重錯誤】缺少基礎執行環境！")
         sys.exit(1)
-    print("====================================================\n")
+    print("====================================================\\n")
 
     cwd = os.getcwd()
     
@@ -72,7 +77,7 @@ def main():
             print("❌ 找不到 skills 或 .github/skills 資料夾！請確保您在正確的專案根目錄執行此腳本。")
             sys.exit(1)
 
-    print("\n📦 檢查 VSCode Playwright 擴充...")
+    print("\\n📦 檢查 VSCode Playwright 擴充...")
     run_cmd("code --install-extension ms-playwright.playwright", check=False)
 
     env_dir = os.path.join(cwd, skills_path, "record-playwright", "scripts", "playwright-env")
@@ -80,14 +85,14 @@ def main():
         os.makedirs(env_dir)
         print(f"📁 建立隔離區: {env_dir}")
     
-    print("\n⚙️ 檢查 Playwright 引擎與 Chromium (這可能需要數分鐘)...")
+    print("\\n⚙️ 檢查 Playwright 引擎與 Chromium (這可能需要數分鐘)...")
     if not os.path.exists(os.path.join(env_dir, "package.json")):
         run_cmd("npx -y create-playwright@latest . --quiet --browser=chromium --lang=TypeScript", cwd=env_dir)
         run_cmd("npx playwright install chromium", cwd=env_dir)
     else:
         print("✅ Playwright 專案已初始化。")
     
-    print("\n📦 檢查影音轉檔與環境依賴...")
+    print("\\n📦 檢查影音轉檔與環境依賴...")
     deps = ["ffmpeg-static", "fluent-ffmpeg", "dotenv"]
     need_install = False
     for dep in deps:
@@ -100,7 +105,7 @@ def main():
     else:
         print("✅ 所有 NPM 依賴皆已安裝完畢。")
 
-    print("\n📝 寫入配置檔與專案結構...")
+    print("\\n📝 寫入配置檔與專案結構...")
     config_path = os.path.join(env_dir, "playwright.config.ts")
     if not os.path.exists(config_path):
         config_content = f'''import {{ defineConfig }} from '@playwright/test';
@@ -108,7 +113,7 @@ import {{ readFileSync }} from 'node:fs';
 import {{ resolve }} from 'node:path';
 
 try {{
-  for (const line of readFileSync(resolve(__dirname, '{depth_str}.env'), 'utf8').split(/\\r?\\n/)) {{
+  for (const line of readFileSync(resolve(__dirname, '{depth_str}.env'), 'utf8').split(/\\\\r?\\\\n/)) {{
     const separator = line.indexOf('=');
     if (separator > 0 && !line.startsWith('#')) {{
       process.env[line.slice(0, separator)] ??= line.slice(separator + 1);
@@ -162,7 +167,7 @@ test('example smoke test', async ({ page }) => {
     env_path = os.path.join(cwd, ".env")
     if not os.path.exists(env_path):
         with open(env_path, "w", encoding="utf8") as f:
-            f.write("# Playwright Environment Variables\nPLAYWRIGHT_BASE_URL=https://example.com\n")
+            f.write("# Playwright Environment Variables\\nPLAYWRIGHT_BASE_URL=https://example.com\\n")
 
     vscode_dir = os.path.join(cwd, ".vscode")
     os.makedirs(vscode_dir, exist_ok=True)
@@ -174,7 +179,7 @@ test('example smoke test', async ({ page }) => {
         with open(settings_path, "w", encoding="utf8") as f:
             json.dump(vscode_settings, f, indent=2)
 
-    print("\n📦 安全合併外層 package.json...")
+    print("\\n📦 安全合併外層 package.json...")
     cd_path = f"{skills_path}/record-playwright/scripts/playwright-env"
     pkg_path = os.path.join(cwd, "package.json")
     
@@ -198,13 +203,19 @@ test('example smoke test', async ({ page }) => {
     with open(pkg_path, "w", encoding="utf8") as f:
         json.dump(pkg, f, indent=2)
 
-    print("\n🧪 執行自動化 Smoke Test 驗證引擎是否正常啟動...")
+    print("\\n🧪 執行自動化 Smoke Test 驗證引擎是否正常啟動...")
     smoke_cmd = [sys.executable, f"{skills_path}/record-playwright/scripts/test.py", "tests/example.spec.ts"]
     smoke_result = subprocess.run(smoke_cmd, cwd=cwd)
     if smoke_result.returncode == 0:
-        print("\n✅ 環境建置全部完成！您可以開始使用 `npm run auto-combo` 進行無痕錄製了！")
+        print("\\n✅ 環境建置全部完成！您可以開始使用 `npm run auto-combo` 進行無痕錄製了！")
     else:
-        print("\n⚠️ 環境建置完成，但 Smoke Test 執行失敗。請檢查上方日誌。")
+        print("\\n⚠️ 環境建置完成，但 Smoke Test 執行失敗。請檢查上方日誌。")
 
 if __name__ == "__main__":
     main()
+"""
+
+with open(filepath, 'w', encoding='utf-8') as f:
+    f.write(content)
+
+print("setup.py successfully rewritten with correct formatting.")

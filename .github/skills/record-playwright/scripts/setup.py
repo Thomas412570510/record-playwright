@@ -100,6 +100,11 @@ def main():
     else:
         print("✅ 所有 NPM 依賴皆已安裝完畢。")
 
+
+    print("\n📦 檢查 Python 依賴套件 (pandas, openpyxl, playwright)...")
+    run_cmd(f"{sys.executable} -m pip install pandas openpyxl playwright", cwd=cwd, check=False)
+    run_cmd(f"{sys.executable} -m playwright install chromium", cwd=cwd, check=False)
+
     print("\n📝 寫入配置檔與專案結構...")
     config_path = os.path.join(env_dir, "playwright.config.ts")
     if not os.path.exists(config_path):

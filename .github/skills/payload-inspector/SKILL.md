@@ -1,25 +1,42 @@
 ﻿---
 name: payload-inspector
-description: 攔截與分析網頁送出的網路請求 Payload，專門用於稽核登入時的敏感參數（如 rangpwd、password、帳號傳輸格式與加密狀態）。
+description: 攔截並稽核網頁發送的網路請求 Payload，自動檢測明文密碼傳輸與內部 IPv4 位址洩漏。
 ---
 
-# Payload Inspector 網路傳輸稽核技能
+# Payload Inspector 網路傳輸與機敏資訊稽核技能
 
-本技能專為 Web 資安查核與封包傳輸檢測設計。
-透過 Playwright 網路監聽機制，攔截所有由瀏覽器發送的 HTTP POST/PUT 請求 Payload，自動提取關鍵欄位（例如 `rangpwd`、`password`、`token`），用以評估傳輸安全性（如是否明文傳輸、是否有前端雜湊或加密處理）。
+本技能專為資安查核、弱點評估與網路傳輸檢測設計。
+透過 Playwright 網路監聽機制，攔截所有由瀏覽器發送的 HTTP POST/PUT/PATCH 請求 Payload，並進行兩大核心稽核：
+1. **明文密碼檢測**：比對輸入之密碼是否未經前端加密（如直接出現明文，或確認是否使用 `rangpwd` 加密欄位）。
+2. **IPv4 位址洩漏檢測**：利用正規表達式自動掃描封包與傳輸內容是否洩漏企業內部私有 IP（如 `10.x.x.x`、`192.168.x.x`）。
 
-## 核心功能
-1. **即時攔截 Network 請求**：取代手動開啟 F12 Network 分頁，全自動監聽網頁所有送出的封包。
-2. **多格式自動解析**：自動識別並解析 `application/json`、`application/x-www-form-urlencoded` 以及 Multipart 資料。
-3. **敏感參數偵測**：針對 `rangpwd`、`pwd`、`password`、`account` 等資安稽核關鍵欄位進行提取與狀態評估。
-4. **輸出稽核紀錄**：可將攔截到的 Payload 存成 JSON 檔或整合進資安報表中。
+## 核心模組
+- `scripts/payload_listener.py`: 核心監聽與資安比對引擎（包含 `PayloadAuditor` 類別）。
+- `scripts/inspect_login.py`: 獨立執行檢測的命令列程式。
 
-## 檔案結構
-- `scripts/payload_listener.py`: 提供網路請求監聽與 Payload 解析的核心函式庫。
-- `scripts/inspect_login.py`: 獨立可執行的檢測主程式，輸入目標網址即可進行登入測試與封包攔截。
+## 產出格式
+產出的檢視發現文字嚴格對齊稽核清單格式：
+```text
+發現IPv4 位址:
+10.42.70.37
 
-## 執行方式
-於 `scripts` 目錄下執行：
-```bash
-python inspect_login.py
+發現明確的明文密碼:
+password = WrongPassword123!
+```
+
+## 呼叫範例（整合進既有流程）
+```python
+from payload_listener import PayloadAuditor
+
+# 1. 建立 Auditor 並綁定 page
+auditor = PayloadAuditor(page, input_account="TestUser", input_password="TestPassword123")
+
+# 2. 進行正常瀏覽器操作 (輸入、點擊送出)
+page.goto("https://target-url.com/login")
+page.fill("input[type='password']", "TestPassword123")
+page.click("button[type='submit']")
+page.wait_for_timeout(3000)
+
+# 3. 取得符合稽核 Excel 格式的文字
+finding_text = auditor.get_audit_findings_text()
 ```
